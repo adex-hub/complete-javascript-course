@@ -532,12 +532,12 @@ console.log(calcAverageHumanAge([16, 6, 10, 5, 6, 1, 4]));
 */
 
 // The calculate calc Human age function refactored per jonas request/assignment.
-const calcAverageHumanAge = ages =>
-  ages
-    .map(age => (age <= 2 ? 2 * age : 16 + age * 4))
-    // .reduce((acc, age, _, arr) => age >= 18 ? acc + age / arr.length : '', 0);
+// const calcAverageHumanAge = ages =>
+//   ages
+//     .map(age => (age <= 2 ? 2 * age : 16 + age * 4))
+//     .reduce((acc, age, _, arr) => age >= 18 ? acc + age / arr.length : '', 0);
 
-    console.log(calcAverageHumanAge([16, 6, 10, 5, 6, 1, 4]));
+//     console.log(calcAverageHumanAge([16, 6, 10, 5, 6, 1, 4]));
 
 
 /*
