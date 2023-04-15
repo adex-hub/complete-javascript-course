@@ -94,7 +94,7 @@ const displayMovements = function (movements, sort = false) {
         <div class="movements__type movements__type--${type}">${
       i + 1
     } ${type}</div>
-        <div class="movements__value">${mov}€</div>
+        <div class="movements__value">${mov.toFixed(2)}€</div>
       </div>
     `;
 
@@ -104,19 +104,19 @@ const displayMovements = function (movements, sort = false) {
 
 const calcDisplayBalance = function (acc) {
   acc.balance = acc.movements.reduce((acc, mov) => acc + mov, 0);
-  labelBalance.textContent = `${acc.balance}€`;
+  labelBalance.textContent = `${acc.balance.toFixed(2)}€`;
 };
 
 const calcDisplaySummary = function (acc) {
   const incomes = acc.movements
     .filter(mov => mov > 0)
     .reduce((acc, mov) => acc + mov, 0);
-  labelSumIn.textContent = `${incomes}€`;
+  labelSumIn.textContent = `${incomes.toFixed(2)}€`;
 
   const out = acc.movements
     .filter(mov => mov < 0)
     .reduce((acc, mov) => acc + mov, 0);
-  labelSumOut.textContent = `${Math.abs(out)}€`;
+  labelSumOut.textContent = `${Math.abs(out).toFixed(2)}€`;
 
   const interest = acc.movements
     .filter(mov => mov > 0)
@@ -126,7 +126,7 @@ const calcDisplaySummary = function (acc) {
       return int >= 1;
     })
     .reduce((acc, int) => acc + int, 0);
-  labelSumInterest.textContent = `${interest}€`;
+  labelSumInterest.textContent = `${interest.toFixed(2)}€`;
 };
 
 const createUsernames = function (accs) {
@@ -155,6 +155,21 @@ const updateUI = function (acc) {
 // Event handlers
 let currentAccount;
 
+// FAKE ALWAYS LOGGED IN
+currentAccount = account1;
+updateUI(currentAccount);
+containerApp.style.opacity = 100;
+
+const now = new Date();
+const day = `${now.getDate()}`.padStart(2, 0);
+const month = `${now.getMonth() + 1}`;
+const year = now.getFullYear();
+const hour = now.getHours();
+const min = now.getMinutes();
+labelDate.textContent = `${day}/${month}/${year}, ${hour}:${min}`;
+
+// day/month/year
+
 btnLogin.addEventListener('click', function (e) {
   // Prevent form from submitting
   e.preventDefault();
@@ -164,7 +179,7 @@ btnLogin.addEventListener('click', function (e) {
   );
   console.log(currentAccount);
 
-  if (currentAccount?.pin === Number(inputLoginPin.value)) {
+  if (currentAccount?.pin === +inputLoginPin.value) {
     // Display UI and message
     labelWelcome.textContent = `Welcome back, ${
       currentAccount.owner.split(' ')[0]
@@ -206,7 +221,7 @@ btnTransfer.addEventListener('click', function (e) {
 btnLoan.addEventListener('click', function (e) {
   e.preventDefault();
 
-  const amount = Number(inputLoanAmount.value);
+  const amount = Math.floor(inputLoanAmount.value);
 
   if (amount > 0 && currentAccount.movements.some(mov => mov >= amount * 0.1)) {
     // Add movement
@@ -223,7 +238,7 @@ btnClose.addEventListener('click', function (e) {
 
   if (
     inputCloseUsername.value === currentAccount.username &&
-    Number(inputClosePin.value) === currentAccount.pin
+    +inputClosePin.value === currentAccount.pin
   ) {
     const index = accounts.findIndex(
       acc => acc.username === currentAccount.username
@@ -251,3 +266,201 @@ btnSort.addEventListener('click', function (e) {
 /////////////////////////////////////////////////
 /////////////////////////////////////////////////
 // LECTURES
+
+/*
+// Converting and checking numbers.
+console.log(23 === 23.0);
+
+// Conversion
+console.log(Number('23'));
+console.log(+'23');
+// ↑
+// This way of converting strings to number works because immediately js sees the + operator it does type coercion and converts the strings into numbers.
+
+
+// Parsing
+console.log(Number.parseInt('30px', 10));
+console.log(Number.parseInt('e23', 10));
+
+console.log(Number.parseInt(' 2.5rem  '));
+console.log(Number.parseFloat(' 2.5rem  ')); // My goto whenever I need to read a value from a string particularly from CSS.
+
+// console.log(parseFloat(' 2.5rem  '));
+
+// Check if value is NaN -- Jonas never uses this in practice
+console.log(Number.isNaN(20));
+console.log(Number.isNaN('20'));
+console.log(Number.isNaN(+'20X'));
+console.log(Number.isNaN(23 / 0));
+
+// Checking if a value is number (This should be my goto whenever I need to check if a value is a number or not).
+console.log(Number.isFinite(20));
+console.log(Number.isFinite('20'));
+console.log(Number.isFinite(+'20X'));
+console.log(Number.isFinite(23 / 0));
+
+console.log(Number.isInteger(23));
+console.log(Number.isInteger(23.0));
+*/
+
+/*
+// Math and Rounding
+console.log(Math.sqrt(25)); // Square root
+console.log(25 ** (1 / 2)); // Square root through exponentiation
+console.log(8 ** (1 / 3)); // Cubic root through exponentiation
+
+console.log(Math.max(5, 18, 23, 11, 2));
+console.log(Math.max(5, 18, '23', 11, 2));
+console.log(Math.max(5, 18, '23px', 11, 2));
+
+console.log(Math.min(5, 18, 23, 11, 2));
+
+console.log(Math.PI * Number.parseFloat('10px') ** 2);
+
+console.log(Math.floor(Math.random() * 6) + 1);
+
+const randomInt = (min, max) =>
+  Math.trunc(Math.random() * (max - min) + 1) + min;
+// console.log(randomInt(10, 20));
+
+
+// Rounding Integers
+console.log(Math.round(23.4));
+console.log(Math.round(23.9));
+
+console.log(Math.ceil(23.4));
+console.log(Math.ceil(23.9));
+
+console.log(Math.floor(23.4));
+console.log(Math.floor('23.9'));
+
+console.log(Math.trunc(23.4));
+
+console.log(Math.trunc(-23.4));
+console.log(Math.floor(-23.4));
+
+// Rounding decimals
+console.log((2.7).toFixed(0));
+console.log((2.7).toFixed(3));
+console.log((2.357).toFixed(2));
+console.log(+(2.7).toFixed(0));
+*/
+
+/*
+console.log(5 % 2);
+console.log(5 / 2);
+
+console.log(8 % 3);
+console.log(8 / 3);
+
+console.log(6 % 2);
+console.log(6 / 2);
+
+console.log(7 % 2);
+console.log(7 / 2);
+
+const isEven = n => n % 2 === 0;
+
+console.log(isEven(5));
+console.log(isEven(7));
+console.log(isEven(234));
+
+labelBalance.addEventListener('click', () => {
+  [...document.querySelectorAll('.movements__row')].forEach((row, i) => {
+    //  0, 2, 4, 6
+    if (i % 2 === 0) row.style.backgroundColor = 'orangered';
+    // 0, 3, 6, 9
+    // if (i % 3 === 0) row.style.backgroundColor = 'blue';
+  });
+});
+*/
+
+/*
+// Numeric seperators - was brought to life in ES 2021
+
+// 287,460,000,000
+const diameter = 287_460_000_000;
+console.log(diameter);
+
+const price = 345_00;
+console.log(price);
+
+const transferFee1 = 15_00;
+const transferFee2 = 1_500;
+
+const PI = 3.1415;
+console.log(PI);
+
+console.log(Number('230_000'));
+console.log(parseInt('230_000'));
+*/
+
+/*
+// BigInt
+console.log(2 ** 53 - 1);
+console.log(Number.MAX_SAFE_INTEGER);
+console.log(2 ** 53 + 1);
+console.log(2 ** 53 + 2);
+console.log(2 ** 53 + 3);
+console.log(2 ** 53 + 4);
+
+console.log(2413423452363464573646562345344563145345456256767267785678747568676564567n);
+console.log(BigInt(24547898707));
+
+console.log(244334554645545523532464566245n * 10000n);
+console.log(10000n + 10000n);
+
+const bigNum = 2342143453453464545674567585876n
+const num = 23;
+
+console.log(bigNum * BigInt(num));
+
+// Exceptions
+console.log(20n > 15);
+console.log(20n === 20); // The triple equal sign doesn't do type coercion.
+console.log(typeof 20n)
+console.log(20n == 20);
+
+console.log(bigNum + ' is REALLY BIG!!!');
+
+// Divisions
+console.log(100n / 3n); // Returns the closest integer value to the supposed decimal, cuts the decimal part off.
+console.log(100 / 3);
+*/
+
+/*
+// Fundamentals of Dates and Times
+const now = new Date();
+console.log(now);
+
+console.log(new Date('Apr 15 2023 15:03:'));
+console.log(new Date('February 17, 2004'));
+console.log(new Date(account1.movementsDates[0]));
+
+console.log(new Date(2037, 10, 19, 15, 23, 5));
+console.log(new Date(2037, 10, 31));
+
+console.log(new Date(0));
+console.log(new Date(3 * 24 * 60 * 60 * 1000));
+*/
+
+/*
+// Creating Dates
+const future = new Date(2037, 10, 19, 15, 23);
+console.log(future.getFullYear()); // Don't make the mistake of using getYear()
+console.log(future.getMonth()); // It is zero-based. Hence 0 refers to the first Month of the Year & 11 refers to the twelfth month of the year.
+console.log(future.getDate()); // Gets day of the month.
+console.log(future.getDay()); // Gets day of the week (ranging from 1 to 7).
+console.log(future.getHours()); 
+console.log(future.getMinutes()); 
+console.log(future.getSeconds()); 
+console.log(future.toISOString()); // Returns a date in string format that follows international standard. Useful for converting a date into a string you can store somewhere.
+console.log(future.getTime()); // Returns the amount of milliseconds that has passed since Jan 1, 1970.
+
+console.log(new Date(2142253380000));
+
+console.log(Date.now());
+
+future.setFullYear(2040);
+console.log(future);
+*/
