@@ -5,6 +5,10 @@ const modal = document.querySelector('.modal');
 const overlay = document.querySelector('.overlay');
 const btnCloseModal = document.querySelector('.btn--close-modal');
 const btnsOpenModal = document.querySelectorAll('.btn--show-modal');
+const nav = document.querySelector('.nav');
+const tabs = document.querySelectorAll('.operations__tab');
+const tabsContainer = document.querySelector('.operations__tab-container');
+const tabsContent = document.querySelectorAll('.operations__content');
 
 ///////////////////////////////////////
 // Modal window
@@ -93,9 +97,6 @@ document.querySelector('.nav__links').addEventListener('click', function (e) {
 });
 
 // Tabbed component
-const tabs = document.querySelectorAll('.operations__tab');
-const tabsContainer = document.querySelector('.operations__tab-container');
-const tabsContent = document.querySelectorAll('.operations__content');
 
 tabsContainer.addEventListener('click', function (e) {
   const clicked = e.target.closest('.operations__tab');
@@ -115,6 +116,228 @@ tabsContainer.addEventListener('click', function (e) {
     .querySelector(`.operations__content--${clicked.dataset.tab}`)
     .classList.add('operations__content--active');
 });
+
+// Menu fade animation
+const handleHover = function (e, opacity) {
+  if (e.target.classList.contains('nav__link')) {
+    const link = e.target;
+    const siblings = link.closest('.nav').querySelectorAll('.nav__link');
+    const logo = link.closest('.nav').querySelector('img');
+
+    siblings.forEach(el => {
+      if (el !== link) el.style.opacity = this;
+    });
+    logo.style.opacity = this;
+  }
+};
+
+// Passing "argument" into the handler.
+nav.addEventListener('mouseover', handleHover.bind(0.5));
+nav.addEventListener('mouseout', handleHover.bind(1));
+
+/////////////////////////////////////////////////////////////
+// // Sticky navigation
+// const initialCoords = section1.getBoundingClientRect();
+// console.log(initialCoords);
+
+// // -- The scroll event is only available on the window!
+//   window.addEventListener('scroll', function () {
+//   console.log(window.scrollY);
+
+//   // This works but it is pretty bad for performance.
+//   if (this.window.scrollY > initialCoords.top) nav.classList.add('sticky');
+//   else nav.classList.remove('sticky');
+// });
+
+// N.B: Mouseover and mouseout bubble while mouseenter and mouseleave don't bubble.
+
+//////////////////////////////////////////////////////
+// Sticky navigation: Intersection Observer API
+
+// const obsCallback = function(entries, observer) {
+//   entries.forEach(entry => {
+//     console.log(entry);
+//   })
+// };
+
+// const obsOptions = {
+//   root: null,
+//   threshold: [0, 0.2],
+// };
+
+// const observer = new IntersectionObserver(obsCallback, obsOptions);
+// observer.observe(section1);
+
+const header = document.querySelector('.header');
+const navHeight = nav.getBoundingClientRect().height;
+
+const stickyNav = function (entries) {
+  const [entry] = entries;
+  console.log(entry);
+
+  if (!entry.isIntersecting) nav.classList.add('sticky');
+  else nav.classList.remove('sticky');
+};
+
+const headerObserver = new IntersectionObserver(stickyNav, {
+  root: null, // This selects the entire viewport.
+  threshold: 0, // When 0% of the header is visible within the viewport the callback should be invoked.
+  rootMargin: `-${navHeight}px`,
+});
+
+headerObserver.observe(header);
+
+// Intersection Observer API: revealing elements on scroll.
+const allSections = document.querySelectorAll('.section');
+// console.log(allSections);
+
+const revealSection = function (entries, observer) {
+  const [entry] = entries;
+
+  if (!entry.isIntersecting) return; // Guard clause. very smart and useful.
+
+  entry.target.classList.remove('section--hidden');
+  observer.unobserve(entry.target);
+};
+
+const sectionObserver = new IntersectionObserver(revealSection, {
+  root: null,
+  threshold: 0.15,
+});
+
+allSections.forEach(function (section) {
+  sectionObserver.observe(section);
+  section.classList.add('section--hidden');
+});
+
+// Lazy loading images.
+// Why it is essential: not every one has a fast internet connection so as a web developer I have the responsibilty to make sure that those users can still have a fun browsing experience on the sites that I develop. Images have by far the largest effect on the performance of a website. So I need to really learn and pay attention.
+
+const imgTargets = document.querySelectorAll('img[data-src]'); // selecting all images that have the data-src property.
+
+const loadImg = function (entries, observer) {
+  const [entry] = entries;
+
+  if (!entry.isIntersecting) return;
+
+  // Replace src with data-src
+  entry.target.src = entry.target.dataset.src;
+
+  entry.target.addEventListener('load', function () {
+    entry.target.classList.remove('lazy-img');
+  });
+
+  observer.unobserve(entry.target);
+};
+
+const imgObserver = new IntersectionObserver(loadImg, {
+  root: null,
+  threshold: 0, // The target isn't visible within the viewport.
+  rootMargin: '200px', // Start loading 200px before the user scrolls into the section's view.
+});
+
+imgTargets.forEach(img => imgObserver.observe(img));
+
+// NB:
+// To use the intersection observer API we'd write...
+// new IntersectionObserver()
+// followed by a callback function and an object of options.
+
+//Slider
+const slider = function () {
+  const slides = document.querySelectorAll('.slide');
+  const btnLeft = document.querySelector('.slider__btn--left');
+  const btnRight = document.querySelector('.slider__btn--right');
+  const dotContainer = document.querySelector('.dots');
+
+  let curSlide = 0;
+  const maxSlide = slides.length;
+
+  // This was used when we first started off making the logic behind the slider, for better visibility.
+  // const slider = document.querySelector('.slider');
+  // slider.style.transform = 'scale(0.4) translateX(-800px)';
+  // slider.style.overflow = 'visible';
+
+  const createDots = function () {
+    slides.forEach(function (_, i) {
+      dotContainer.insertAdjacentHTML(
+        'beforeend',
+        `<button class="dots__dot" data-slide="${i}"></button>`
+      );
+    });
+  };
+
+  // Functions
+  const activateDot = function (slide) {
+    // How this function works is that we remove the active class of the dots before adding the active class to the specific dot that's actually active.
+    document
+      .querySelectorAll('.dots__dot')
+      .forEach(dot => dot.classList.remove('dots__dot--active'));
+
+    document
+      .querySelector(`.dots__dot[data-slide = "${slide}"]`)
+      .classList.add('dots__dot--active');
+  };
+
+  const goToSlide = function (slide) {
+    slides.forEach(
+      (s, i) => (s.style.transform = `translateX(${100 * (i - slide)}%)`)
+    );
+  };
+
+  // Next slide
+  const nextSlide = function () {
+    if (curSlide === maxSlide - 1) {
+      curSlide = 0;
+    } else {
+      curSlide++;
+    }
+
+    goToSlide(curSlide);
+    activateDot(curSlide);
+  };
+
+  // Previous Slide
+  const prevSlide = function () {
+    if (curSlide === 0) {
+      curSlide = maxSlide - 1;
+    } else {
+      curSlide--;
+    }
+    goToSlide(curSlide);
+    activateDot(curSlide);
+  };
+
+  const init = function () {
+    goToSlide(0);
+    createDots();
+    activateDot(0); // This activates the dot when the browser loads.
+  };
+
+  init();
+
+  // Event handlers
+  btnRight.addEventListener('click', nextSlide);
+  btnLeft.addEventListener('click', prevSlide);
+
+  document.addEventListener('keydown', function (e) {
+    console.log(e);
+    if (e.key === 'ArrowLeft') prevSlide();
+    if (e.key === 'ArrowRight') nextSlide();
+    // The line above could also be written like this ↓↓↓, It would work due to short circuiting.
+    // e.key === 'ArrowRight' && nextSlide();
+  });
+
+  // Using event delegation, (i.e we aren't attaching an event handler to each dot but to the common parent.)
+  dotContainer.addEventListener('click', function (e) {
+    if (e.target.classList.contains('dots__dot')) {
+      const { slide } = e.target.dataset;
+      goToSlide(slide);
+      activateDot(slide);
+    }
+  });
+};
+slider();
 
 ///////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////
@@ -290,3 +513,23 @@ console.log(h1.parentElement.children);
   if(el !== h1) el.style.transform = 'scale(0.5)';
 })
 */
+
+// Lifecycle DOM Events -- Events that happen from the moment a user enters a page to the moment the user leaves it!
+document.addEventListener('DOMContentLoaded', function(e) {
+  console.log('HTML parsed and DOM tree built!', e);
+})
+
+window.addEventListener('load', function(e) {
+  console.log('Page fully loaded', e);
+})
+
+// Doesn't work on Edge and Firefox developer browser for some reason.
+// window.addEventListener('beforeunload', function(e){
+//   e.preventDefault(); // Although not necessary for chrome some browsers require it.
+//   console.log(e);
+//   this.prompt('Stop!');
+//   e.returnValue = ''; // For historical reasons according to Jonas.
+// })
+// The only time a user should be prompted when he is about to leave a page is when the user is in the middle of filling a form or in the middle of writing a blog post.
+
+// Efficient Script Loading in JS.
